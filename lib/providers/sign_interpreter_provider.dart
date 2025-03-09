@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:google_ml_kit/google_ml_kit.dart';
+// import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
@@ -70,7 +70,7 @@ class SignInterpreterProvider with ChangeNotifier {
     }
   }
 
-  Future<void> interpretLiveCamera(InputImage inputImage) async {
+  Future<void> interpretLiveCamera(dynamic inputImage) async {
     if (!_isInitialized) await initialize();
     
     _setLoading(true);

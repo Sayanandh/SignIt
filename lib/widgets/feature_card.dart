@@ -9,6 +9,7 @@ class FeatureCard extends StatelessWidget {
   final String iconPath;
   final Color? color;
   final VoidCallback onTap;
+  final IconData fallbackIcon;
 
   const FeatureCard({
     super.key,
@@ -16,6 +17,7 @@ class FeatureCard extends StatelessWidget {
     required this.iconPath,
     this.color,
     required this.onTap,
+    this.fallbackIcon = Icons.star,
   });
 
   @override
@@ -27,7 +29,7 @@ class FeatureCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.cardColor,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
               color: cardColor.withOpacity(0.1),
@@ -37,7 +39,7 @@ class FeatureCard extends StatelessWidget {
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           child: Material(
             color: Colors.transparent,
             child: InkWell(
@@ -45,37 +47,37 @@ class FeatureCard extends StatelessWidget {
               splashColor: cardColor.withOpacity(0.1),
               highlightColor: cardColor.withOpacity(0.05),
               child: Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      width: 60,
-                      height: 60,
+                      width: 50,
+                      height: 50,
                       decoration: BoxDecoration(
                         color: cardColor.withOpacity(0.1),
                         shape: BoxShape.circle,
                       ),
                       child: Center(
-                        child: SvgPicture.asset(
-                          iconPath,
-                          width: 30,
-                          height: 30,
-                          colorFilter: ColorFilter.mode(
-                            cardColor,
-                            BlendMode.srcIn,
-                          ),
+                        child: Icon(
+                          fallbackIcon,
+                          size: 24,
+                          color: cardColor,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     Text(
                       title,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      style: TextStyle(
                         color: AppColors.textPrimaryColor,
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
                       textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -93,5 +95,48 @@ class FeatureCard extends StatelessWidget {
         curve: Curves.easeOut,
       ),
     );
+  }
+  
+  Widget _buildIcon(Color cardColor) {
+    try {
+      return SvgPicture.asset(
+        iconPath,
+        width: 28,
+        height: 28,
+        colorFilter: ColorFilter.mode(
+          cardColor,
+          BlendMode.srcIn,
+        ),
+        placeholderBuilder: (context) => Icon(
+          fallbackIcon,
+          size: 28,
+          color: cardColor,
+        ),
+      );
+    } catch (e) {
+      // Fallback to icon if SVG loading fails
+      return Icon(
+        _getIconForTitle(),
+        size: 28,
+        color: cardColor,
+      );
+    }
+  }
+  
+  IconData _getIconForTitle() {
+    switch (title.toLowerCase()) {
+      case 'live camera':
+        return Icons.camera_alt;
+      case 'upload image':
+        return Icons.image;
+      case 'upload video':
+        return Icons.videocam;
+      case 'history':
+        return Icons.history;
+      case 'settings':
+        return Icons.settings;
+      default:
+        return fallbackIcon;
+    }
   }
 } 

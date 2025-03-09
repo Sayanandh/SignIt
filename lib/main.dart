@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -10,26 +11,39 @@ import 'screens/image_upload_screen.dart';
 import 'screens/video_upload_screen.dart';
 import 'screens/results_screen.dart';
 import 'screens/camera_screen.dart';
-import 'screens/map_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/splash_screen.dart';
+import 'screens/onboarding_screen.dart';
 
 void main() async {
+  // Initialize Flutter binding first
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Set preferred orientations
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+  // Set system UI settings
+  if (Platform.isAndroid) {
+    // Set portrait orientation only
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
+    
+    // Set system UI mode
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  } else {
+    // Set preferred orientations for iOS
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  }
   
   // Set system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.dark,
-      systemNavigationBarColor: AppColors.backgroundColor,
-      systemNavigationBarIconBrightness: Brightness.dark,
+      systemNavigationBarColor: Colors.black,
+      systemNavigationBarIconBrightness: Brightness.light,
     ),
   );
   
@@ -49,14 +63,15 @@ class MyApp extends StatelessWidget {
         title: AppStrings.appName,
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
-        initialRoute: AppRoutes.home,
+        initialRoute: AppRoutes.splash,
         routes: {
+          AppRoutes.splash: (context) => const SplashScreen(),
+          AppRoutes.onboarding: (context) => const OnboardingScreen(),
           AppRoutes.home: (context) => const HomeScreen(),
           AppRoutes.imageUpload: (context) => const ImageUploadScreen(),
           AppRoutes.videoUpload: (context) => const VideoUploadScreen(),
           AppRoutes.results: (context) => const ResultsScreen(),
           AppRoutes.camera: (context) => const CameraScreen(),
-          AppRoutes.map: (context) => const MapScreen(),
           AppRoutes.history: (context) => const HistoryScreen(),
           AppRoutes.settings: (context) => const SettingsScreen(),
           // Add other routes as they are implemented

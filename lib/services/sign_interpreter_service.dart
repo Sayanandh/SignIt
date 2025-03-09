@@ -2,8 +2,8 @@ import 'dart:io';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:tflite_flutter/tflite_flutter.dart';
-import 'package:google_ml_kit/google_ml_kit.dart';
+// import 'package:tflite_flutter/tflite_flutter.dart';
+// import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -11,22 +11,21 @@ import '../models/sign_interpretation.dart';
 import '../constants/app_constants.dart';
 
 class SignInterpreterService {
-  late Interpreter _interpreter;
-  late List<String> _labels;
+  // late Interpreter _interpreter;
+  List<String> _labels = [
+    'Hello', 'Thank you', 'Please', 'Help', 'Good', 'Bad',
+    'Yes', 'No', 'Name', 'Nice to meet you', 'How are you',
+    'I am fine', 'Sorry', 'Good morning', 'Good night'
+  ];
   bool _isInitialized = false;
-  final ImageLabeler _imageLabeler = GoogleMlKit.vision.imageLabeler();
+  // final ImageLabeler _imageLabeler = GoogleMlKit.vision.imageLabeler();
 
   Future<void> initialize() async {
     if (_isInitialized) return;
 
     try {
-      // Load TFLite model
-      _interpreter = await Interpreter.fromAsset(AppAssets.signLanguageModel);
-      
-      // Load labels
-      final labelsFile = await File(AppAssets.signLanguageLabels).readAsString();
-      _labels = labelsFile.split('\n');
-      
+      // Mock initialization
+      await Future.delayed(const Duration(milliseconds: 500)); // Simulate loading
       _isInitialized = true;
     } catch (e) {
       debugPrint('Error initializing sign interpreter: $e');
@@ -34,42 +33,24 @@ class SignInterpreterService {
     }
   }
 
-  // For demonstration purposes - in a real app, this would use the actual ML model
+  // For demonstration purposes - using mock data
   Future<SignInterpretation> interpretImage(File imageFile) async {
     if (!_isInitialized) await initialize();
     
     try {
-      final inputImage = InputImage.fromFile(imageFile);
-      final processedImage = await _imageLabeler.processImage(inputImage);
+      // Simulate processing delay
+      await Future.delayed(const Duration(seconds: 1));
       
-      // This is a placeholder for actual ML processing
-      // In a real app, you would:
-      // 1. Preprocess the image to match model input requirements
-      // 2. Run inference with TFLite
-      // 3. Process the output to get meaningful results
-      
-      // For demo, we'll create a mock result
+      // Create mock result
+      final random = Random();
       final gestures = <SignGesture>[];
-      double highestConfidence = 0;
-      String resultText = '';
       
-      if (processedImage.isNotEmpty) {
-        for (var label in processedImage) {
-          final gesture = SignGesture(
-            label: label.label,
-            confidence: label.confidence,
-            boundingBox: null, // Would come from object detection in real app
-          );
-          gestures.add(gesture);
-          
-          if (label.confidence > highestConfidence) {
-            highestConfidence = label.confidence;
-            resultText += '${label.label} ';
-          }
-        }
-      } else {
-        // If no labels detected, use random mock data
-        final random = Random();
+      // Generate 1-3 random gestures
+      final gestureCount = 1 + random.nextInt(2);
+      String resultText = '';
+      double highestConfidence = 0;
+      
+      for (var i = 0; i < gestureCount; i++) {
         final randomIndex = random.nextInt(_labels.length);
         final mockConfidence = 0.7 + random.nextDouble() * 0.3; // Between 0.7 and 1.0
         
@@ -79,8 +60,10 @@ class SignInterpreterService {
           boundingBox: null,
         ));
         
-        resultText = _labels[randomIndex];
-        highestConfidence = mockConfidence;
+        if (mockConfidence > highestConfidence) {
+          highestConfidence = mockConfidence;
+          resultText = _labels[randomIndex];
+        }
       }
       
       return SignInterpretation(
@@ -101,12 +84,10 @@ class SignInterpreterService {
   Future<SignInterpretation> interpretVideo(File videoFile) async {
     if (!_isInitialized) await initialize();
     
-    // In a real app, this would:
-    // 1. Extract frames from the video
-    // 2. Process each frame with the model
-    // 3. Combine results for a complete interpretation
+    // Simulate processing delay
+    await Future.delayed(const Duration(seconds: 2));
     
-    // For demo, we'll create a mock result
+    // Create mock result
     final random = Random();
     final mockWords = [
       'Hello', 'Thank you', 'Please', 'Help', 'Good', 'Bad',
@@ -140,46 +121,24 @@ class SignInterpreterService {
     );
   }
 
-  Future<SignInterpretation> interpretLiveCamera(InputImage inputImage) async {
+  Future<SignInterpretation> interpretLiveCamera(dynamic inputImage) async {
     if (!_isInitialized) await initialize();
     
     try {
-      final processedImage = await _imageLabeler.processImage(inputImage);
+      // Simulate processing delay
+      await Future.delayed(const Duration(milliseconds: 800));
       
-      // Similar to image interpretation, but for live camera feed
+      // Create mock result
+      final random = Random();
+      final randomIndex = random.nextInt(_labels.length);
+      final mockConfidence = 0.7 + random.nextDouble() * 0.3;
+      
       final gestures = <SignGesture>[];
-      double highestConfidence = 0;
-      String resultText = '';
-      
-      if (processedImage.isNotEmpty) {
-        for (var label in processedImage) {
-          final gesture = SignGesture(
-            label: label.label,
-            confidence: label.confidence,
-            boundingBox: null,
-          );
-          gestures.add(gesture);
-          
-          if (label.confidence > highestConfidence) {
-            highestConfidence = label.confidence;
-            resultText += '${label.label} ';
-          }
-        }
-      } else {
-        // If no labels detected, use random mock data
-        final random = Random();
-        final randomIndex = random.nextInt(_labels.length);
-        final mockConfidence = 0.7 + random.nextDouble() * 0.3;
-        
-        gestures.add(SignGesture(
-          label: _labels[randomIndex],
-          confidence: mockConfidence,
-          boundingBox: null,
-        ));
-        
-        resultText = _labels[randomIndex];
-        highestConfidence = mockConfidence;
-      }
+      gestures.add(SignGesture(
+        label: _labels[randomIndex],
+        confidence: mockConfidence,
+        boundingBox: null,
+      ));
       
       // For live camera, we'll save the image for history
       final tempDir = await getTemporaryDirectory();
@@ -188,11 +147,11 @@ class SignInterpreterService {
       
       return SignInterpretation(
         id: const Uuid().v4(),
-        text: resultText.trim(),
+        text: _labels[randomIndex],
         timestamp: DateTime.now(),
         source: InterpretationSource.camera,
         imagePath: imagePath,
-        confidence: highestConfidence,
+        confidence: mockConfidence,
         detectedGestures: gestures,
       );
     } catch (e) {
@@ -203,8 +162,9 @@ class SignInterpreterService {
 
   void dispose() {
     if (_isInitialized) {
-      _interpreter.close();
-      _imageLabeler.close();
+      // No need to close anything in mock implementation
+      // _interpreter.close();
+      // _imageLabeler.close();
     }
   }
 } 
